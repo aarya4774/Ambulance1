@@ -98,7 +98,7 @@
   
       firebase.auth().signInWithEmailAndPassword(email, password)
         .then(() => {
-          if (email.includes("admin")) {
+          if (email.includes("hospital")) {
             window.location.href = "admin.html";
           } else if (email.includes("driver")) {
             window.location.href = "index.html";
