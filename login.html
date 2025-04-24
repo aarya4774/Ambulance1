@@ -82,68 +82,37 @@
       <div class="mb-3">
         <input type="password" id="password" class="form-control" placeholder="Password" required />
       </div>
-      <div class="mb-3">
-        <select class="form-select" id="role" required>
-          <option value="">Select Role</option>
-          <option value="driver">Ambulance Driver</option>
-          <option value="admin">Hospital Admin</option>
-          <option value="traffic">Traffic Signal Operator</option>
-        </select>
-      </div>
       <button type="submit" class="btn btn-warning btn-custom">Login</button>
       <button type="button" class="btn btn-outline-light btn-custom mt-2" onclick="createAccount()">Create Account</button>
     </form>
+    
     <p class="text-center mt-3 small">Use valid Firebase credentials.</p>
   </div>
 
   <script>
     function login(event) {
       event.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const role = document.getElementById("role").value;
-
+  
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+  
       firebase.auth().signInWithEmailAndPassword(email, password)
         .then(() => {
-          if (role === "admin") {
+          if (email.includes("admin")) {
             window.location.href = "admin.html";
-          } else if (role === "driver") {
+          } else if (email.includes("driver")) {
             window.location.href = "index.html";
-          } else if (role === "traffic") {
+          } else if (email.includes("traffic")) {
             window.location.href = "traffic.html";
           } else {
-            alert("Please select a valid role.");
+            alert("Unknown user role!");
           }
         })
         .catch((error) => {
           alert("Login failed: " + error.message);
         });
     }
-
-    function createAccount() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const role = document.getElementById("role").value;
-
-      if (!email || !password || !role) {
-        alert("Please enter email, password and select a role.");
-        return;
-      }
-
-      firebase.auth().createUserWithEmailAndPassword(email, password)
-        .then(() => {
-          alert("✅ Account created!");
-          if (role === "admin") {
-            window.location.href = "admin.html";
-          } else {
-            window.location.href = "index.html";
-          }
-        })
-        .catch((error) => {
-          alert("❌ " + error.message);
-          console.error(error);
-        });
-    }
   </script>
+  
 </body>
 </html>
