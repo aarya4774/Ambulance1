@@ -58,6 +58,7 @@
     </button>
     <button class="btn btn-outline-danger btn-sm" onclick="logout()">Logout 🔒</button>
   </div>
+  
 
   <!-- Dashboard -->
   <div class="container mt-2">
@@ -77,6 +78,9 @@
           <p><strong>Condition:</strong> <span id="patientCondition">-</span></p>
           <p><strong>Emergency:</strong> <span id="emergencyType">-</span></p>
           <p><strong>Hospital:</strong> <span id="destination">-</span></p>
+        </div>
+        <div class="text-center mt-4">
+          <button class="btn btn-danger" onclick="resetData()">🧹 Reset All Data</button>
         </div>
       </div>
       <div class="col-md-8">
@@ -103,7 +107,6 @@
       <div class="card p-3 bg-light shadow"><h6>Signals Cleared</h6><h4 id="signalsCleared">--</h4></div>
     </div>
   </div>
-  
 
 
   <script>
@@ -249,6 +252,43 @@ db.ref("clearedSignals").once("value", snap => {
   const signals = snap.val();
   document.getElementById("signalsCleared").innerText = signals ? Object.keys(signals).length : 0;
 });
+function resetData() {
+  if (confirm("Are you sure you want to reset all emergency data?")) {
+    const updates = {
+      "ambulance/alert": false,
+      "ambulance/location": null,
+      "alerts": null,
+      "clearedSignals": null
+    };
+
+    db.ref().update(updates)
+      .then(() => {
+        Swal.fire("✅ Reset complete!", "All alerts and signals cleared.", "success");
+
+        // Clear UI manually
+        document.getElementById("ambId").innerText = "-";
+        document.getElementById("driverName").innerText = "-";
+        document.getElementById("driverContact").innerText = "-";
+        document.getElementById("ambStatus").innerText = "-";
+
+        document.getElementById("patientName").innerText = "-";
+        document.getElementById("patientAge").innerText = "-";
+        document.getElementById("patientCondition").innerText = "-";
+        document.getElementById("emergencyType").innerText = "-";
+        document.getElementById("destination").innerText = "-";
+
+        document.getElementById("status").innerText = "✅ No Emergency";
+        document.getElementById("eta").innerText = "ETA: --";
+        document.getElementById("totalAlerts").innerText = "--";
+        document.getElementById("activeAmbulances").innerText = "--";
+        document.getElementById("signalsCleared").innerText = "--";
+      })
+      .catch((err) => {
+        Swal.fire("❌ Error", err.message, "error");
+      });
+  }
+}
+
 
   </script>
 
