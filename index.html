@@ -11,48 +11,119 @@
   <script src="firebase-config.js"></script>
   <style>
     body {
-      background: radial-gradient(circle at top left, #0f2027, #203a43, #2c5364);
-      color: #fff;
+      background: #f0f4f8;
+      color: #212529;
       font-family: 'Segoe UI', sans-serif;
+      transition: background 0.4s ease, color 0.4s ease;
       min-height: 100vh;
       padding: 40px 0;
     }
+
+    .dark-mode {
+      background-color: #121212;
+      color: #f8f9fa;
+    }
+
     .dashboard-wrapper {
       max-width: 1100px;
       margin: auto;
-      background-color: #1a1a2e;
+      background-color: #ffffff;
       padding: 30px;
       border-radius: 20px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.4s ease, color 0.4s ease;
     }
+
+    .dark-mode .dashboard-wrapper {
+      background-color: #1f1f2e;
+      color: #f0f0f0;
+    }
+
+    h2, h4 {
+      color: #3b0764;
+    }
+
+    .dark-mode h2, .dark-mode h4, .dark-mode label {
+      color: #ffc107;
+    }
+
     .btn-custom {
       font-size: 1.1rem;
       padding: 12px;
       border-radius: 12px;
+      transition: transform 0.3s ease, background 0.3s ease;
     }
+
+    .btn-custom:hover {
+      transform: translateY(-2px);
+      background-color: #17cfc4 !important;
+      color: #fff;
+    }
+
     .status-indicator {
       margin-top: 20px;
       font-size: 1rem;
       padding: 10px;
       border-radius: 8px;
       display: inline-block;
+      animation: pulse 1.5s infinite;
     }
-    input, select {
+
+    .bg-danger {
+      background-color: #dc3545 !important;
+      color: #fff;
+    }
+
+    .bg-secondary {
+      background-color: #adb5bd !important;
+      color: #fff;
+    }
+
+    .form-control, .form-select {
       border-radius: 10px !important;
+      transition: box-shadow 0.2s ease-in-out;
     }
+
+    .form-control:focus, .form-select:focus {
+      box-shadow: 0 0 5px #17cfc4;
+      border-color: #17cfc4;
+    }
+
+    .dark-mode .form-control, .dark-mode .form-select {
+      background-color: #2a2a3a;
+      border-color: #444;
+      color: #f8f9fa;
+    }
+
     label {
       margin-bottom: 0.3rem;
+      font-weight: 600;
     }
-    h4 {
-      color: #ffc107;
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 999;
     }
   </style>
 </head>
 <body>
+  <div class="theme-toggle">
+    <button class="btn btn-outline-secondary btn-sm" onclick="toggleTheme()">
+      🌙 Toggle Dark Mode
+    </button>
+  </div>
+
   <div class="dashboard-wrapper">
     <h2 class="text-center mb-4">🚑 Ambulance Dashboard</h2>
 
-    <!-- Control Buttons -->
     <div class="d-flex justify-content-center gap-3 mb-4">
       <button class="btn btn-success btn-custom" onclick="startAlert()">Send Emergency Alert</button>
       <button class="btn btn-danger btn-custom" onclick="stopAlert()">Clear Alert</button>
@@ -67,9 +138,7 @@
 
     <hr class="my-4">
 
-    <!-- Two Columns: Patient Info and Ambulance Info -->
     <div class="row g-4">
-      <!-- Patient Info Form -->
       <div class="col-md-6">
         <h4>🧑‍⚕️ Patient Details</h4>
         <form onsubmit="submitPatientInfo(event)">
@@ -97,7 +166,6 @@
         </form>
       </div>
 
-      <!-- Ambulance Info Form -->
       <div class="col-md-6">
         <h4>🚑 Ambulance Details</h4>
         <form onsubmit="submitAmbulanceInfo(event)">
@@ -130,47 +198,45 @@
 
   <script>
     firebase.auth().onAuthStateChanged((user) => {
-  if (!user) {
-    window.location.href = "login.html"; // redirect if not logged in
-  }
-});
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+
     let trackingInterval = null;
 
     function startAlert() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
 
-      // 1. Set ambulance alert + location
-      db.ref("ambulance").update({
-        alert: true,
-        location: { lat, lng }
-      }).then(() => {
-        document.getElementById("status").textContent = "Alert: ACTIVE";
-        document.getElementById("status").className = "status-indicator bg-danger";
+          db.ref("ambulance").update({
+            alert: true,
+            location: { lat, lng }
+          }).then(() => {
+            document.getElementById("status").textContent = "Alert: ACTIVE";
+            document.getElementById("status").className = "status-indicator bg-danger";
 
-        // 2. Fetch patient info and log alert
-        db.ref("ambulance/patientInfo").once("value").then((snapshot) => {
-          const info = snapshot.val() || {};
-          const alertData = {
-            name: info.name || "Unknown",
-            hospital: info.hospital || "Unknown",
-            location: { lat, lng },
-            status: "active",
-            time: Date.now()
-          };
-          db.ref("alerts").push(alertData);
+            db.ref("ambulance/patientInfo").once("value").then((snapshot) => {
+              const info = snapshot.val() || {};
+              const alertData = {
+                name: info.name || "Unknown",
+                hospital: info.hospital || "Unknown",
+                location: { lat, lng },
+                status: "active",
+                time: Date.now()
+              };
+              db.ref("alerts").push(alertData);
+            });
+          });
+        }, () => {
+          alert("Location access denied. Please enable GPS.");
         });
-      });
-    }, () => {
-      alert("Location access denied. Please enable GPS.");
-    });
-  } else {
-    alert("Geolocation is not supported by this browser.");
-  }
-}
-
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
 
     function stopAlert() {
       db.ref("ambulance/alert").set(false).then(() => {
@@ -215,15 +281,14 @@
         hospital: hospital
       }).then(() => {
         Swal.fire({
-  icon: 'success',
-  title: 'Patient Info Submitted',
-  text: 'Details have been shared with the hospital.',
-  confirmButtonText: 'OK',
-  backdrop: true,
-  position: 'center',
-  timer: 3000
-});
-
+          icon: 'success',
+          title: 'Patient Info Submitted',
+          text: 'Details have been shared with the hospital.',
+          confirmButtonText: 'OK',
+          backdrop: true,
+          position: 'center',
+          timer: 3000
+        });
       });
     }
 
@@ -241,16 +306,19 @@
         status: ambStatus
       }).then(() => {
         Swal.fire({
-  icon: 'info',
-  title: 'Ambulance Info Updated',
-  text: 'Details have been pushed to the admin dashboard.',
-  confirmButtonText: 'OK',
-  backdrop: true,
-  position: 'center',
-  timer: 3000
-});
-
+          icon: 'info',
+          title: 'Ambulance Info Updated',
+          text: 'Details have been pushed to the admin dashboard.',
+          confirmButtonText: 'OK',
+          backdrop: true,
+          position: 'center',
+          timer: 3000
+        });
       });
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark-mode");
     }
   </script>
 </body>

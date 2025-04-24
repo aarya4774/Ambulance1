@@ -109,13 +109,7 @@
 
   <script>
     // Auth Redirect + Welcome Message
-    firebase.auth().onAuthStateChanged((user) => {
-      if (!user) {
-        window.location.href = "login.html";
-      } else {
-        document.getElementById("userWelcome").innerText = "Welcome, " + user.email;
-      }
-    });
+    
 
     let map, marker;
     let lastPatientName = null;
@@ -241,7 +235,7 @@ db.ref("alerts").once("value", snap => {
 });
 
 // Count active ambulances
-db.ref("ambulances").once("value", snap => {
+db.ref("ambulances").on("value", snap => {
   let count = 0;
   const ambulances = snap.val();
   for (let id in ambulances) {
@@ -249,6 +243,7 @@ db.ref("ambulances").once("value", snap => {
   }
   document.getElementById("activeAmbulances").innerText = count;
 });
+
 
 // Count cleared signals
 db.ref("clearedSignals").once("value", snap => {
